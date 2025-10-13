@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/carlospinellowork/drinks-online-fullstack/internal/database"
 	"github.com/carlospinellowork/drinks-online-fullstack/internal/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -11,9 +12,11 @@ import (
 func main() {
 	app := fiber.New()
 
+	database.Connect()
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
-		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 	}))
 
 	routes.SetupRoutes(app)
