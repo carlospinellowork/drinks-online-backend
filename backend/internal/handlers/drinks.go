@@ -19,11 +19,23 @@ func GetDrinks(c *fiber.Ctx) error {
 
 	page, _ := strconv.Atoi(pageStr)
 	limit, _ := strconv.Atoi(limitStr)
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
 	offset := (page - 1) * limit
 
 	query := database.DB.Model(&models.Drink{})
 
 	if category != "" {
+		category = strings.TrimSpace(category)
 		query = query.Where("LOWER(category) = ?", strings.ToLower(category))
 	}
 
@@ -31,12 +43,22 @@ func GetDrinks(c *fiber.Ctx) error {
 		query = query.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(search)+"%")
 	}
 
-	result := query.Limit(limit).Offset(offset).Find(&drinks)
+	var total int64
+	query.Count(&total)
+
+	result := query.Limit(limit).Offset(offset).Order("name ASC").Find(&drinks)
 	if result.Error != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Erro ao buscar drinks"})
 	}
 
-	return c.JSON(fiber.Map{"data": drinks})
+	return c.JSON(fiber.Map{
+		"data": drinks,
+		"meta": fiber.Map{
+			"total": total,
+			"page":  page,
+			"limit": limit,
+		},
+	})
 }
 
 func CreateDrink(c *fiber.Ctx) error {

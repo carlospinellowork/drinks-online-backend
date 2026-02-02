@@ -37,5 +37,6 @@ func Connect() {
 	}
 
 	DB = db
+	Seed()
 	log.Println("Conectado ao banco de dados!")
 }
